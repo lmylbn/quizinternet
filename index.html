@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz Internet - Cursus Complet</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      max-width: 800px;
+      width: 100%;
+      padding: 40px;
+      animation: fadeIn 0.5s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .home-screen {
+      text-align: center;
+    }
+
+    .home-screen h1 {
+      color: #667eea;
+      font-size: 2.5em;
+      margin-bottom: 20px;
+    }
+
+    .home-screen p {
+      color: #666;
+      font-size: 1.2em;
+      margin-bottom: 30px;
+      line-height: 1.6;
+    }
+
+    .module-selector {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin: 30px 0;
+    }
+
+    .module-card {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: center;
+      border: 2px solid transparent;
+    }
+
+    .module-card:hover {
+      background: #e9ecef;
+      transform: translateY(-3px);
+    }
+
+    .module-card.selected {
+      background: #667eea;
+      color: white;
+      border-color: #667eea;
+    }
+
+    .module-card h3 {
+      margin-bottom: 10px;
+      font-size: 1.1em;
+    }
+
+    .module-card p {
+      font-size: 0.9em;
+      color: #666;
+      margin: 0;
+    }
+
+    .module-card.selected p {
+      color: rgba(255,255,255,0.9);
+    }
+
+    .stats {
+      display: flex;
+      justify-content: space-around;
+      margin: 30px 0;
+      gap: 20px;
+    }
+
+    .stat-item {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 10px;
+      flex: 1;
+    }
+
+    .stat-number {
+      font-size: 2em;
+      color: #667eea;
+      font-weight: bold;
+    }
+
+    .stat-label {
+      color: #666;
+      margin-top: 5px;
+    }
+
+    .question-screen {
+      display: none;
+    }
+
+    .module-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .module-title {
+      color: #667eea;
+      font-size: 1.8em;
+      margin-bottom: 10px;
+    }
+
+    .module-description {
+      color: #666;
+      font-size: 1em;
+    }
+
+    .progress-container {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .progress-bar {
+      background: #e9ecef;
+      height: 8px;
+      border-radius: 10px;
+      flex: 1;
+      margin: 0 15px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+      height: 100%;
+      transition: width 0.3s ease;
+    }
+
+    .question-counter {
+      color: #666;
+      font-size: 0.9em;
+      min-width: 120px;
+    }
+
+    .question-text {
+      font-size: 1.4em;
+      color: #2c3e50;
+      margin-bottom: 30px;
+      font-weight: 600;
+    }
+
+    .choices {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    .choice-item {
+      background: #f8f9fa;
+      padding: 18px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .choice-item:hover {
+      background: #e9ecef;
+      transform: translateX(5px);
+    }
+
+    .choice-item.selected {
+      background: #667eea;
+      color: white;
+      border-color: #667eea;
+    }
+
+    .choice-item.correct {
+      background: #28a745;
+      color: white;
+      border-color: #28a745;
+    }
+
+    .choice-item.incorrect {
+      background: #dc3545;
+      color: white;
+      border-color: #dc3545;
+    }
+
+    .choice-item.disabled {
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+
+    .choice-radio {
+      width: 20px;
+      height: 20px;
+      border: 2px solid #667eea;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .choice-item.selected .choice-radio {
+      background: white;
+      border-color: white;
+    }
+
+    .feedback {
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: none;
+      animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .feedback.show {
+      display: block;
+    }
+
+    .feedback.correct {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .feedback.incorrect {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    .btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 15px 40px;
+      font-size: 1.1em;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 600;
+      width: 100%;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary {
+      background: white;
+      color: #667eea;
+      border: 2px solid #667eea;
+      margin-top: 15px;
+    }
+
+    .btn-secondary:hover {
+      background: #667eea;
+      color: white;
+    }
+
+    .result-screen {
+      display: none;
+      text-align: center;
+    }
+
+    .result-screen h2 {
+      color: #667eea;
+      font-size: 2em;
+      margin-bottom: 20px;
+    }
+
+    .score-display {
+      font-size: 4em;
+      color: #667eea;
+      font-weight: bold;
+      margin: 30px 0;
+    }
+
+    .score-message {
+      font-size: 1.3em;
+      color: #666;
+      margin-bottom: 30px;
+    }
+
+    .module-results {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin: 30px 0;
+      text-align: left;
+    }
+
+    .module-result {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 10px;
+    }
+
+    .module-result h4 {
+      color: #667eea;
+      font-size: 1em;
+      margin-bottom: 5px;
+    }
+
+    .module-result p {
+      font-size: 0.9em;
+      color: #666;
+      margin: 0;
+    }
+
+    .module-score {
+      font-weight: bold;
+      color: #28a745;
+    }
+
+    .module-score.bad {
+      color: #dc3545;
+    }
+
+    .module-score.medium {
+      color: #ffc107;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Page d'accueil -->
+    <div id="home" class="home-screen">
+      <h1>🌐 Quiz Internet - Cursus Complet</h1>
+      <p>Testez vos connaissances sur Internet et le Web à travers 8 modules thématiques.</p>
+
+      <div class="stats">
+        <div class="stat-item">
+          <div class="stat-number">32</div>
+          <div class="stat-label">Questions</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">8</div>
+          <div class="stat-label">Modules</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">~20</div>
+          <div class="stat-label">Minutes</div>
+        </div>
+      </div>
+
+      <div class="module-selector" id="moduleSelector">
+        <!-- Les modules seront ajoutés dynamiquement -->
+      </div>
+
+      <button class="btn" onclick="startQuiz()">Commencer le quiz complet</button>
+      <button class="btn btn-secondary" onclick="selectModule()">Ou choisir un module spécifique</button>
+    </div>
+
+    <!-- Page de question -->
+    <div id="question" class="question-screen">
+      <div class="module-header">
+        <h2 class="module-title" id="moduleTitle">Module 1 - Comprendre Internet</h2>
+        <p class="module-description" id="moduleDescription">Les bases d'Internet et du Web</p>
+      </div>
+
+      <div class="progress-container">
+        <div class="question-counter">
+          Question <span id="currentQ">1</span> sur <span id="totalQ">4</span>
+        </div>
+        <div class="progress-bar">
+          <div id="progressFill" class="progress-fill" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <div class="question-text" id="questionText"></div>
+
+      <div id="feedback" class="feedback"></div>
+
+      <div class="choices" id="choicesContainer"></div>
+
+      <button class="btn" id="validateBtn" onclick="validateAnswer()">Valider ma réponse</button>
+      <button class="btn" id="nextBtn" onclick="nextQuestion()" style="display:none;">Question suivante</button>
+    </div>
+
+    <!-- Page de résultats -->
+    <div id="result" class="result-screen">
+      <h2>🎉 Quiz terminé !</h2>
+      <div class="score-display" id="finalScore">0/32</div>
+      <div class="score-message" id="scoreMessage"></div>
+
+      <div class="module-results" id="moduleResults">
+        <!-- Résultats par module seront ajoutés ici -->
+      </div>
+
+      <button class="btn" onclick="restartQuiz()">Recommencer le quiz</button>
+      <button class="btn btn-secondary" onclick="showHome()">Retour à l'accueil</button>
+    </div>
+  </div>
+
+  <script>
+    // Structure des modules avec leurs questions
+    const modules = [
+      {
+        id: 1,
+        title: "Comprendre Internet",
+        description: "Les bases d'Internet et du Web",
+        questions: [
+          {
+            q: "Internet et le Web, est-ce la même chose ?",
+            choices: ["Oui", "Non"],
+            answer: 1
+          },
+          {
+            q: "Citez un service d'Internet qui n'est pas le Web.",
+            choices: ["E-mail", "Site web", "Moteur de recherche"],
+            answer: 0
+          },
+          {
+            q: "À quoi sert principalement Internet ?",
+            choices: ["Jouer à la console", "Échanger des informations", "Regarder la télévision"],
+            answer: 1
+          },
+          {
+            q: "Quel appareil permet d'utiliser Internet ?",
+            choices: ["Machine à laver", "Ordinateur", "Smartphone"],
+            answer: [1, 2]
+          }
+        ]
+      },
+      {
+        id: 2,
+        title: "Accéder à Internet",
+        description: "Les outils pour se connecter",
+        questions: [
+          {
+            q: "Où tape-t-on l'adresse d'un site web ?",
+            choices: ["Dans la barre d'adresse", "Dans Google", "Dans Word"],
+            answer: 0
+          },
+          {
+            q: "On peut utiliser Internet uniquement avec le Wi-Fi.",
+            choices: ["Vrai", "Faux"],
+            answer: 1
+          },
+          {
+            q: "Quel élément d'un navigateur permet d'ouvrir plusieurs pages en même temps ?",
+            choices: ["Les favoris", "Les onglets", "L'historique"],
+            answer: 1
+          },
+          {
+            q: "Quel type de connexion permet d'accéder à Internet en mobilité ?",
+            choices: ["Câble Ethernet", "4G/5G", "Clé USB"],
+            answer: 1
+          }
+        ]
+      },
+      {
+        id: 3,
+        title: "Chercher et trouver de l'information",
+        description: "Maîtriser les recherches sur le Web",
+        questions: [
+          {
+            q: "Quelle est la différence entre un résultat naturel et une publicité ?",
+            choices: ["Aucune", "La publicité est payée", "Le naturel est plus coloré"],
+            answer: 1
+          },
+          {
+            q: "Donnez un mot-clé précis pour trouver l'adresse de la mairie de Lyon.",
+            choices: ["mairie", "mairie Lyon", "bâtiment"],
+            answer: 1
+          },
+          {
+            q: "Que faut-il faire pour améliorer ses recherches sur Internet ?",
+            choices: ["Mettre des mots-clés précis", "Cliquer au hasard", "N'utiliser qu'un mot vague"],
+            answer: 0
+          },
+          {
+            q: "Quel moteur de recherche est le plus utilisé ?",
+            choices: ["Google", "Bing", "Qwant"],
+            answer: 0
+          }
+        ]
+      },
+      {
+        id: 4,
+        title: "Premiers pas sur le Web",
+        description: "Naviguer et interagir avec les pages web",
+        questions: [
+          {
+            q: "Qu'est-ce qu'un lien hypertexte ?",
+            choices: ["Une adresse e-mail", "Un mot/bouton qui mène vers une autre page", "Une image"],
+            answer: 1
+          },
+          {
+            q: "Sur un smartphone, où retrouve-t-on un fichier téléchargé ?",
+            choices: ["Dans l'appareil photo", "Dans l'application 'Fichiers'", "Dans les contacts"],
+            answer: 1
+          },
+          {
+            q: "Que permet d'ajouter un site en favori ?",
+            choices: ["Le supprimer", "Le retrouver rapidement", "L'envoyer par e-mail"],
+            answer: 1
+          },
+          {
+            q: "Que signifie www dans une adresse web ?",
+            choices: ["World Wide Web", "Windows Web Way", "Wide World Work"],
+            answer: 0
+          }
+        ]
+      },
+      {
+        id: 5,
+        title: "La sécurité de base",
+        description: "Protéger ses données et son identité",
+        questions: [
+          {
+            q: "Que signifie le 'S' dans HTTPS ?",
+            choices: ["Sécurité", "Service", "Social"],
+            answer: 0
+          },
+          {
+            q: "Un site en HTTPS est toujours honnête.",
+            choices: ["Vrai", "Faux"],
+            answer: 1
+          },
+          {
+            q: "Quel est un exemple d'arnaque en ligne ?",
+            choices: ["Un mail demandant vos identifiants bancaires", "Une mise à jour du navigateur", "Une recherche Google"],
+            answer: 0
+          },
+          {
+            q: "Qu'est-ce qu'un mot de passe fort ?",
+            choices: ["Un seul mot simple", "Un mélange de lettres, chiffres, symboles", "Seulement des chiffres"],
+            answer: 1
+          }
+        ]
+      },
+      {
+        id: 6,
+        title: "Créer et gérer ses identifiants",
+        description: "Comptes et mots de passe sécurisés",
+        questions: [
+          {
+            q: "À quoi sert un compte Internet ?",
+            choices: ["Accéder à un service personnel", "Lire les journaux papier", "Éteindre son ordinateur"],
+            answer: 0
+          },
+          {
+            q: "Citez une méthode pour mémoriser ses mots de passe.",
+            choices: ["Carnet sécurisé", "Toujours le même mot de passe", "Les dire à un ami"],
+            answer: 0
+          },
+          {
+            q: "Que doit contenir un mot de passe solide ?",
+            choices: ["Seulement des chiffres", "Mélange lettres, chiffres, symboles", "Un seul mot simple"],
+            answer: 1
+          },
+          {
+            q: "Que représente souvent l'adresse e-mail dans un compte ?",
+            choices: ["Un pseudonyme", "L'identifiant principal", "Un fichier joint"],
+            answer: 1
+          }
+        ]
+      },
+      {
+        id: 7,
+        title: "Utiliser une messagerie électronique",
+        description: "Envoyer et recevoir des e-mails",
+        questions: [
+          {
+            q: "Quelle est la différence entre boîte de réception et spams ?",
+            choices: ["Spams = messages indésirables", "Réception vide", "Spams envoyés par amis"],
+            answer: 0
+          },
+          {
+            q: "On peut transférer un e-mail reçu.",
+            choices: ["Vrai", "Faux"],
+            answer: 0
+          },
+          {
+            q: "Que permet une pièce jointe dans un mail ?",
+            choices: ["Ajouter une image ou document", "Envoyer un SMS", "Appeler quelqu'un"],
+            answer: 0
+          },
+          {
+            q: "Quel champ utiliser pour envoyer une copie d'un mail ?",
+            choices: ["CC", "Objet", "Spam"],
+            answer: 0
+          }
+        ]
+      },
+      {
+        id: 8,
+        title: "Aller plus loin",
+        description: "Services en ligne et outils avancés",
+        questions: [
+          {
+            q: "Exemple de service administratif en ligne ?",
+            choices: ["Déclarer ses impôts", "Jouer à Candy Crush", "Regarder un film"],
+            answer: 0
+          },
+          {
+            q: "Amazon est un site de e-commerce.",
+            choices: ["Vrai", "Faux"],
+            answer: 0
+          },
+          {
+            q: "Que permet le cloud ?",
+            choices: ["Sauvegarder et partager des fichiers", "Envoyer des SMS", "Jouer hors ligne"],
+            answer: 0
+          },
+          {
+            q: "Exemple de réseau social ?",
+            choices: ["Facebook", "Gmail", "Windows"],
+            answer: 0
+          }
+        ]
+      }
+    ];
+
+    let currentModule = null;
+    let currentQuestion = 0;
+    let score = 0;
+    let moduleScores = {};
+    let userAnswers = [];
+    let isModuleMode = false;
+
+    // Initialisation
+    document.addEventListener('DOMContentLoaded', function() {
+      initModuleSelector();
+    });
+
+    function initModuleSelector() {
+      const container = document.getElementById('moduleSelector');
+      container.innerHTML = '';
+
+      modules.forEach(module => {
+        const div = document.createElement('div');
+        div.className = 'module-card';
+        div.innerHTML = `
+          <h3>Module ${module.id}</h3>
+          <p>${module.title}</p>
+        `;
+        div.onclick = () => selectModule(module.id - 1);
+        container.appendChild(div);
+      });
+    }
+
+    function selectModule(moduleIndex) {
+      if (moduleIndex !== undefined) {
+        // Mode module spécifique
+        isModuleMode = true;
+        currentModule = moduleIndex;
+        document.getElementById('home').style.display = 'none';
+        document.getElementById('question').style.display = 'block';
+        currentQuestion = 0;
+        score = 0;
+        userAnswers = [];
+        moduleScores = {};
+        showQuestion();
+      } else {
+        // Afficher le sélecteur de modules
+        const cards = document.querySelectorAll('.module-card');
+        cards.forEach(card => card.classList.toggle('selected'));
+
+        const btn = document.querySelector('.btn-secondary');
+        if (btn.textContent.includes('choisir')) {
+          btn.textContent = 'Annuler la sélection';
+        } else {
+          btn.textContent = 'Ou choisir un module spécifique';
+        }
+      }
+    }
+
+    function startQuiz() {
+      // Mode quiz complet
+      isModuleMode = false;
+      document.getElementById('home').style.display = 'none';
+      document.getElementById('question').style.display = 'block';
+      currentModule = 0;
+      currentQuestion = 0;
+      score = 0;
+      userAnswers = [];
+      moduleScores = {};
+      showQuestion();
+    }
+
+    function showQuestion() {
+      const module = modules[currentModule];
+      const q = module.questions[currentQuestion];
+
+      // Mise à jour de l'interface du module
+      document.getElementById('moduleTitle').textContent = `Module ${module.id} - ${module.title}`;
+      document.getElementById('moduleDescription').textContent = module.description;
+
+      // Mise à jour du compteur de questions
+      document.getElementById('currentQ').textContent = currentQuestion + 1;
+      document.getElementById('totalQ').textContent = module.questions.length;
+
+      // Mise à jour de la barre de progression
+      const progress = ((currentQuestion) / module.questions.length) * 100;
+      document.getElementById('progressFill').style.width = progress + '%';
+
+      // Affichage de la question
+      document.getElementById('questionText').textContent = q.q;
+
+      // Génération des choix
+      const container = document.getElementById('choicesContainer');
+      container.innerHTML = '';
+
+      q.choices.forEach((choice, index) => {
+        const div = document.createElement('div');
+        div.className = 'choice-item';
+        div.innerHTML = `<div class="choice-radio"></div><div>${choice}</div>`;
+        div.onclick = () => selectChoice(index);
+        container.appendChild(div);
+      });
+
+      // Réinitialisation des boutons
+      document.getElementById('validateBtn').style.display = 'block';
+      document.getElementById('validateBtn').disabled = true;
+      document.getElementById('nextBtn').style.display = 'none';
+      document.getElementById('feedback').className = 'feedback';
+    }
+
+    function selectChoice(index) {
+      if (document.getElementById('validateBtn').style.display === 'none') return;
+
+      document.querySelectorAll('.choice-item').forEach(item => {
+        item.classList.remove('selected');
+      });
+      document.querySelectorAll('.choice-item')[index].classList.add('selected');
+      document.getElementById('validateBtn').disabled = false;
+
+      // Stocker la réponse de l'utilisateur
+      if (!userAnswers[currentModule]) {
+        userAnswers[currentModule] = [];
+      }
+      userAnswers[currentModule][currentQuestion] = index;
+    }
+
+    function validateAnswer() {
+      const module = modules[currentModule];
+      const q = module.questions[currentQuestion];
+      const userAnswer = userAnswers[currentModule][currentQuestion];
+      const correctAnswers = Array.isArray(q.answer) ? q.answer : [q.answer];
+      const isCorrect = correctAnswers.includes(userAnswer);
+
+      if (isCorrect) {
+        score++;
+        if (!moduleScores[currentModule]) {
+          moduleScores[currentModule] = 0;
+        }
+        moduleScores[currentModule]++;
+      }
+
+      // Marquer les bonnes et mauvaises réponses
+      const choices = document.querySelectorAll('.choice-item');
+      choices.forEach((item, index) => {
+        item.classList.add('disabled');
+        if (correctAnswers.includes(index)) {
+          item.classList.add('correct');
+        }
+        if (index === userAnswer && !isCorrect) {
+          item.classList.add('incorrect');
+        }
+      });
+
+      // Afficher le feedback
+      const feedback = document.getElementById('feedback');
+      feedback.className = 'feedback show ' + (isCorrect ? 'correct' : 'incorrect');
+
+      if (isCorrect) {
+        feedback.innerHTML = '✅ <strong>Bonne réponse !</strong>';
+      } else {
+        const correctText = correctAnswers.map(i => q.choices[i]).join(' et ');
+        feedback.innerHTML = `❌ <strong>Mauvaise réponse.</strong> La bonne réponse est : <strong>${correctText}</strong>`;
+      }
+
+      // Mise à jour des boutons
+      document.getElementById('validateBtn').style.display = 'none';
+      document.getElementById('nextBtn').style.display = 'block';
+    }
+
+    function nextQuestion() {
+      const module = modules[currentModule];
+      currentQuestion++;
+
+      if (currentQuestion < module.questions.length) {
+        // Question suivante dans le même module
+        showQuestion();
+      } else {
+        // Fin du module
+        if (isModuleMode) {
+          // Mode module spécifique - afficher résultats du module
+          showModuleResults();
+        } else {
+          // Mode quiz complet - passer au module suivant
+          currentModule++;
+          if (currentModule < modules.length) {
+            currentQuestion = 0;
+            showQuestion();
+          } else {
+            // Fin du quiz complet
+            showResults();
+          }
+        }
+      }
+    }
+
+    function showModuleResults() {
+      const module = modules[currentModule];
+      const moduleScore = moduleScores[currentModule] || 0;
+      const total = module.questions.length;
+      const percentage = Math.round((moduleScore / total) * 100);
+
+      document.getElementById('question').style.display = 'none';
+      document.getElementById('result').style.display = 'block';
+
+      document.getElementById('finalScore').textContent = `${moduleScore}/${total}`;
+      let message = '';
+      if (percentage >= 90) {
+        message = `🌟 Excellent ! Vous maîtrisez parfaitement le module "${module.title}" !`;
+      } else if (percentage >= 75) {
+        message = `👏 Très bien ! Vous avez de solides connaissances sur "${module.title}" !`;
+      } else if (percentage >= 50) {
+        message = `👍 Pas mal ! Continuez à vous former sur "${module.title}" !`;
+      } else {
+        message = `📚 Continuez vos efforts sur "${module.title}", vous progresserez !`;
+      }
+      document.getElementById('scoreMessage').textContent = message;
+
+      // Masquer la section des résultats par module
+      document.getElementById('moduleResults').style.display = 'none';
+    }
+
+    function showResults() {
+      document.getElementById('question').style.display = 'none';
+      document.getElementById('result').style.display = 'block';
+
+      // Calcul du score total
+      let totalPossible = 0;
+      modules.forEach(module => {
+        totalPossible += module.questions.length;
+      });
+
+      document.getElementById('finalScore').textContent = `${score}/${totalPossible}`;
+      const percentage = Math.round((score / totalPossible) * 100);
+
+      let message = '';
+      if (percentage >= 90) {
+        message = '🌟 Excellent ! Vous maîtrisez parfaitement tous les sujets !';
+      } else if (percentage >= 75) {
+        message = '👏 Très bien ! Vous avez de solides connaissances globales !';
+      } else if (percentage >= 50) {
+        message = '👍 Pas mal ! Continuez à vous former sur certains modules !';
+      } else {
+        message = '📚 Continuez vos efforts, vous progresserez module par module !';
+      }
+      document.getElementById('scoreMessage').textContent = message;
+
+      // Affichage des résultats par module
+      const moduleResultsContainer = document.getElementById('moduleResults');
+      moduleResultsContainer.style.display = 'grid';
+      moduleResultsContainer.innerHTML = '';
+
+      modules.forEach((module, index) => {
+        const moduleScore = moduleScores[index] || 0;
+        const total = module.questions.length;
+        const percentage = Math.round((moduleScore / total) * 100);
+
+        let scoreClass = 'module-score';
+        if (percentage < 50) {
+          scoreClass += ' bad';
+        } else if (percentage < 75) {
+          scoreClass += ' medium';
+        }
+
+        const div = document.createElement('div');
+        div.className = 'module-result';
+        div.innerHTML = `
+          <h4>Module ${module.id} - ${module.title}</h4>
+          <p><span class="${scoreClass}">${moduleScore}/${total}</span> (${percentage}%)</p>
+        `;
+        moduleResultsContainer.appendChild(div);
+      });
+    }
+
+    function restartQuiz() {
+      if (isModuleMode) {
+        selectModule(currentModule);
+      } else {
+        startQuiz();
+      }
+    }
+
+    function showHome() {
+      document.getElementById('result').style.display = 'none';
+      document.getElementById('home').style.display = 'block';
+
+      // Réinitialiser le sélecteur de modules
+      const cards = document.querySelectorAll('.module-card');
+      cards.forEach(card => card.classList.remove('selected'));
+
+      const btn = document.querySelector('.btn-secondary');
+      btn.textContent = 'Ou choisir un module spécifique';
+    }
+  </script>
+</body>
+</html>
